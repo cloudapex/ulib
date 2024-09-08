@@ -1,0 +1,14 @@
+syntax = "proto3";// 协议为proto3
+
+import "google/protobuf/any.proto";
+
+package response;
+
+option go_package = "lib/htp/response";
+
+message Response { 
+	int32 		code 			= 1;
+	string 		msg 			= 2; 
+	google.protobuf.Any data 	= 3; // 特定的应答结构
+	string 		error 			= 4; // 程序报错信息(仅内部使用)
+}
