@@ -13,7 +13,7 @@
 <!-- /TOC -->
 ## 介绍
 
-典型的api服务器, 适用于开发stateless服务, 此项目重写note的slot游戏服务器.
+典型的api服务器, 适用于开发stateless服务.
 
 ## 软件架构
 
