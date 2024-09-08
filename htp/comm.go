@@ -1,12 +1,5 @@
 package htp
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.2
-Date:2014-10-18
-Description: 接口定义
-*******************************************************************************/
 import (
 	"github.com/cloudapex/ulib/ctl"
 	"github.com/cloudapex/ulib/htp/metactx"

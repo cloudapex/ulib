@@ -1,13 +1,5 @@
 package util
 
-/******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.0
-Date:2014-10-18
-Description:系统函数
-- 文件操作: https://studygolang.com/articles/3154
-******************************************************************************/
 import (
 	"fmt"
 	"os"

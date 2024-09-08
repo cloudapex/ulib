@@ -1,12 +1,5 @@
 package htp
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.2
-Date:2014-10-18
-Description: API Service
-*******************************************************************************/
 import (
 	"encoding/base64"
 	"encoding/json"

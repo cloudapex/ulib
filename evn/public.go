@@ -1,12 +1,5 @@
 package evn
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.2
-Date:2014-10-18
-Description:事件中心(单例)
-*******************************************************************************/
 import (
 	"github.com/cloudapex/ulib/ctl"
 

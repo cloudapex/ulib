@@ -1,12 +1,5 @@
 package rdb
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.0
-Date:2020-05-13
-Description: List数据结构
-*******************************************************************************/
 import "github.com/cloudapex/ulib/util"
 
 type List struct {

@@ -1,12 +1,5 @@
 package mdb
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.0
-Date:2020-06-15
-Description: 自定义日志接口[xorm]
-*******************************************************************************/
 import (
 	"github.com/cloudapex/ulib/log"
 	"github.com/cloudapex/ulib/util"

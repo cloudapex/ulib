@@ -1,13 +1,5 @@
 package middleware
 
-/*******************************************************************************
-Copyright:cloud
-Author:cloudapex@126.com
-Version:1.0
-Date:2022-11-12
-Description: API行为分析
-*******************************************************************************/
-
 import (
 	"bytes"
 	"encoding/json"
