@@ -42,12 +42,7 @@ func Wait(x interface{}) {
 // 终止运行
 func Shut(x interface{}) {
 	util.Quit()
-}
-
-// 工具化运行
-func Exec(exec func(), conf ...*log.Config) {
-	defer Shut(Init("tool", "0.0.0", conf...))
-	exec()
+	util.Wait()
 }
 
 // ======================================== [control]
