@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cloudapex/ulib/ctl"
 	"github.com/cloudapex/ulib/log"
 	"github.com/cloudapex/ulib/util"
 
@@ -19,6 +20,8 @@ func Controller(conf *Config) IContrler { return &controller{Conf: conf} }
 
 // > htp control
 type controller struct {
+	log.ILoger
+
 	ser http.Server
 
 	groups []IGroupRouter
@@ -29,8 +32,8 @@ type controller struct {
 func (this *controller) HandleName() string { return "htp" }
 
 func (this *controller) HandleInit() {
-
-	util.Cast(this.Conf == nil, func() { log.Fatal("conf = nil") }, nil)
+	this.ILoger = ctl.Logger(this.HandleName())
+	util.Cast(this.Conf == nil, func() { this.Fatal("conf = nil") }, nil)
 
 	util.Cast(len(units) != 0, func() { this.groups = append(this.groups, units...) }, nil)
 
@@ -44,15 +47,15 @@ func (this *controller) HandleTerm() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	if err := this.ser.Shutdown(ctx); err != nil {
-		log.Error("shutdown err:%v", err)
+		this.Error("shutdown err:%v", err)
 	}
 }
 
 // ==================== internal
 
 func (this *controller) initRouter() {
-	log.TraceD(-1, "Start init GroupRouter(%d)...", len(this.groups))
-	defer log.InfoD(-1, "Init GroupRouter(%d) done.", len(this.groups))
+	this.TraceD(-1, "Start init GroupRouter(%d)...", len(this.groups))
+	defer this.InfoD(-1, "Init GroupRouter(%d) done.", len(this.groups))
 
 	r := gin.New()
 	util.Cast(this.Conf.RunMode == "debug", func() { r.Use(gin.Logger()) }, nil)
@@ -63,7 +66,7 @@ func (this *controller) initRouter() {
 	// 1. init root router
 	for _, it := range this.groups {
 		if it.Name() == "" {
-			log.Fatal("routerGroup.Name() is empty. type:%#v", it)
+			this.Fatal("routerGroup.Name() is empty. type:%#v", it)
 		}
 		if strutil.ContainsAny(it.Name(), []string{".", "/"}) { // match root router
 			it.Init(&GroupRouter{RouterGroup: &r.RouterGroup})
@@ -74,7 +77,7 @@ func (this *controller) initRouter() {
 	existeds := map[string]*GroupRouter{}
 	for _, it := range this.groups {
 		if it.Name() == "" {
-			log.Fatal("routerGroup.Name() is empty. type:%#v", it)
+			this.Fatal("routerGroup.Name() is empty. type:%#v", it)
 		}
 
 		if strutil.ContainsAny(it.Name(), []string{".", "/"}) { // match root router
@@ -89,8 +92,8 @@ func (this *controller) initRouter() {
 	}
 }
 func (this *controller) startServer() {
-	log.TraceD(-1, "Start htp server...")
-	defer log.InfoD(-1, "Start htp server on listen addr:%q", this.Conf.ListenAddr)
+	this.TraceD(-1, "Start htp server...")
+	defer this.InfoD(-1, "Start htp server on listen addr:%q", this.Conf.ListenAddr)
 
 	this.ser.Addr = this.Conf.ListenAddr
 	this.ser.ReadHeaderTimeout = 2 * time.Second // 读取请求头超时时间
@@ -103,14 +106,14 @@ func (this *controller) startServer() {
 	if !this.Conf.ListnTls.Enable {
 		go func() {
 			if err := this.ser.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.Fatal("Gin run err:%v", err)
+				this.Fatal("Gin run err:%v", err)
 			}
 		}()
 	} else {
 		go func() {
 			err := this.ser.ListenAndServeTLS(this.Conf.ListnTls.CrtFile, this.Conf.ListnTls.KeyFile)
 			if err != nil && err != http.ErrServerClosed {
-				log.Fatal("Gin run with TLS err:%v", err)
+				this.Fatal("Gin run with TLS err:%v", err)
 			}
 		}()
 	}

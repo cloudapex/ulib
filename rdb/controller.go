@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudapex/ulib/ctl"
 	"github.com/cloudapex/ulib/log"
 	"github.com/cloudapex/ulib/util"
 
@@ -16,6 +17,8 @@ func Controller(confs []*Config) IContrler { return &controller{Confs: confs} }
 
 // > redis-client controller
 type controller struct {
+	log.ILoger
+
 	pools map[string]IPooler
 
 	Confs []*Config
@@ -24,19 +27,18 @@ type controller struct {
 func (this *controller) HandleName() string { return "rdb" }
 
 func (this *controller) HandleInit() {
-
-	util.Cast(len(this.Confs) == 0, func() { log.Fatal("conf = nil") }, nil)
+	this.ILoger = ctl.Logger(this.HandleName())
+	util.Cast(len(this.Confs) == 0, func() { this.Fatal("conf = nil") }, nil)
 
 	this.pools = make(map[string]IPooler)
 
-	log.TraceD(-1, "Start init redis conn pool(%d)...", len(this.Confs))
-	defer log.InfoD(-1, "Init redis conn pool(%d) done.", len(this.Confs))
+	this.TraceD(-1, "Start init redis conn pool(%d)...", len(this.Confs))
+	defer this.InfoD(-1, "Init redis conn pool(%d) done.", len(this.Confs))
 
 	for _, conf := range this.Confs {
 		if _, ok := this.pools[conf.Name]; ok {
-			log.Fatalv(ErrNameRepeated)
+			this.Fatalv(ErrNameRepeated)
 		}
-		// conf.revise()
 		var err error
 		var pool IPooler
 		if conf.Name == C_DB_CLUSTER {
@@ -45,7 +47,7 @@ func (this *controller) HandleInit() {
 			pool, err = newNormalPool(conf)
 		}
 		if err != nil {
-			log.Fatalv(err)
+			this.Fatalv(err)
 		}
 
 		this.pools[conf.Name] = pool

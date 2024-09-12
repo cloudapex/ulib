@@ -3,6 +3,7 @@ package mdb
 import (
 	"fmt"
 
+	"github.com/cloudapex/ulib/ctl"
 	"github.com/cloudapex/ulib/log"
 	"github.com/cloudapex/ulib/util"
 
@@ -18,6 +19,7 @@ func Controller() IContrler { return &controller{} }
 
 // > mysql-client control
 type controller struct {
+	log.ILoger
 	mapEngines map[string]*xorm.Engine
 
 	Confs []*Config
@@ -26,19 +28,20 @@ type controller struct {
 func (this *controller) HandleName() string { return "mdb" }
 
 func (this *controller) HandleInit() {
-	util.Cast(this.Confs == nil, func() { log.Fatal("conf = nil") }, nil)
+	this.ILoger = ctl.Logger(this.HandleName())
+	util.Cast(this.Confs == nil, func() { this.Fatal("conf = nil") }, nil)
 
 	this.mapEngines = make(map[string]*xorm.Engine)
 
-	log.TraceD(-1, "Start init mysql connect(%d)...", len(this.Confs))
-	defer log.InfoD(-1, "Init mysql connect(%d) done.", len(this.Confs))
+	this.TraceD(-1, "Start init mysql connect(%d)...", len(this.Confs))
+	defer this.InfoD(-1, "Init mysql connect(%d) done.", len(this.Confs))
 	for _, conf := range this.Confs {
 		if _, ok := this.mapEngines[conf.Name]; ok {
-			log.Fatal("init err=%v", ErrNameRepeated)
+			this.Fatal("init err=%v", ErrNameRepeated)
 		}
 		hand, err := newHand(conf)
 		if err != nil {
-			log.Fatal("init err=%v", err)
+			this.Fatal("init err=%v", err)
 		}
 		this.mapEngines[conf.Name] = hand
 	}
@@ -65,8 +68,6 @@ func (this *controller) Drop(name string, tbls ...IEntity) error {
 
 // ------------------------------------------------------------------------------
 func newHand(conf *Config) (*xorm.Engine, error) {
-	// conf.revise()
-
 	source := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		conf.User, conf.Passwd, conf.Host, conf.Store)
 	x, err := xorm.NewEngine("mysql", source)

@@ -3,6 +3,7 @@ package evn
 import (
 	"fmt"
 
+	"github.com/cloudapex/ulib/ctl"
 	"github.com/cloudapex/ulib/log"
 	"github.com/cloudapex/ulib/util"
 
@@ -13,6 +14,7 @@ func Controller(conf *Config) IContrler { return &controller{Conf: conf} }
 
 // > event controller
 type controller struct {
+	log.ILoger
 	util.RWLocker
 
 	tasks []*Task
@@ -22,9 +24,10 @@ type controller struct {
 	Conf *Config
 }
 
-func (this *controller) HandleName() string { return "env" }
+func (this *controller) HandleName() string { return "evn" }
 
 func (this *controller) HandleInit() {
+	this.ILoger = ctl.Logger(this.HandleName())
 
 	this.handles = map[TEventID]TEventHandler{}
 	util.Cast(this.Conf == nil, func() { log.Fatal("conf = nil") }, nil)
@@ -33,8 +36,8 @@ func (this *controller) HandleInit() {
 	this.Conf.revise()
 
 	// init tasks
-	log.TraceD(-1, "Start Add Task(%d)...", this.Conf.Size)
-	defer log.InfoD(-1, "Add Task(%d) done.", this.Conf.Size)
+	this.TraceD(-1, "Start add task(%d)...", this.Conf.Size)
+	defer this.InfoD(-1, "Add Task(%d) done.", this.Conf.Size)
 
 	for n := 0; n < this.Conf.Size; n++ {
 		this.tasks = append(this.tasks, (&Task{}).Init(fmt.Sprintf("%s-%d", this.HandleName(), n), this.Conf.Capy))
@@ -52,7 +55,7 @@ func (this *controller) HandleTerm() {
 func (this *controller) Listen(event IEvent, handle TEventHandler) {
 	defer this.UnLock(this.Lock())
 	if _, ok := this.handles[event.EventId()]; ok {
-		log.Warn("eventId:%q is already existed and reupdate it.", event.EventId())
+		this.Warn("eventId:%q is already existed and reupdate it.", event.EventId())
 	}
 	this.handles[event.EventId()] = handle
 }
@@ -83,7 +86,7 @@ func (this *controller) OnHandleTask(param interface{}) (ret interface{}, err er
 
 	defer this.RUnLock(this.RLock())
 	hander, ok := this.handles[event.EventId()]
-	util.Cast(ok, func() { hander(param.(IEvent)) }, func() { log.ErrorD(-1, "EventHandle not found for event:%#v", event) })
+	util.Cast(ok, func() { hander(param.(IEvent)) }, func() { this.ErrorD(-1, "EventHandle not found for event:%#v", event) })
 
 	return nil, nil
 }

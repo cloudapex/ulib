@@ -75,6 +75,9 @@ func AppName() string { return app.Name }
 // AppVersion
 func AppVersion() string { return app.Version }
 
+// ctrl field logger
+func Logger(name string) log.ILoger { return log.Field("ctrl", name) }
+
 // ======================================== [internal]
 
 // 停止所有控制器(同步)

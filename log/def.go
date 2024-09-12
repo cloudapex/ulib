@@ -124,6 +124,7 @@ type ILoger interface {
 	Errorv(v ...interface{})
 	ErrorD(depth int, format string, v ...interface{})
 	ErrorDv(depth int, v ...interface{})
+
 	// FATAL
 	Fatal(format string, v ...interface{})
 	Fatalv(v ...interface{})

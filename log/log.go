@@ -242,12 +242,18 @@ func (this *logger) push(level ELogLevel, depth int, fields map[string]interface
 	if this.status != ELS_Running {
 		return
 	}
+	strFields := ""
+	if len(fields) > 0 {
+		b, _ := json.Marshal(fields)
+		strFields = fmt.Sprintf(">%s< ", string(b))
+	}
+
 	unit := &LogUnit{Lv: level, At: time.Now(), Fields: fields}
 	if depth > 0 {
 		file, line, fun := stack(depth)
-		unit.Str = fmt.Sprintf("%s %s:%d|%s() %s", level.String(), file, line, fun, msg)
+		unit.Str = fmt.Sprintf("%s %s:%d|%s() %s%s", level.String(), file, line, fun, strFields, msg)
 	} else {
-		unit.Str = fmt.Sprintf("%s %s", level.String(), msg)
+		unit.Str = fmt.Sprintf("%s %s%s", level.String(), strFields, msg)
 	}
 	this.chanMsgs <- unit
 	Threshold(fmt.Sprintf(C_TH_CHAN_OVERLOAD, this.fileName)).Assert(int64(len(this.chanMsgs)))
@@ -366,22 +372,16 @@ func (this *logger) loop() {
 				continue
 			}
 
-			strFields := ""
-			if len(msg.Fields) > 0 {
-				b, _ := json.Marshal(msg.Fields)
-				strFields = fmt.Sprintf("%30s_>%s<_\n", "", string(b))
-			}
-
 			if this.outMode&ELM_Std != 0 || msg.Lv >= ELL_Infos {
 				this.screenLogger.Println(fmt.Sprintf("\x1b[%dm", LOG_MSG_COLORS[msg.Lv]),
-					msg.At.Format("2006-01-02 15:04:05.000"), msg.Str, strFields, "\x1b[0m")
+					msg.At.Format("2006-01-02 15:04:05.000"), msg.Str, "\x1b[0m")
 			}
 			if this.outMode&ELM_File == 0 {
 				continue
 			}
 			this.fileLogicUpdate()
 
-			this.fileLogiclogger.Println(msg.At.Format("15:04:05.000"), msg.Str, strFields)
+			this.fileLogiclogger.Println(msg.At.Format("15:04:05.000"), msg.Str)
 		case <-t.C:
 			if this.fileLogicHandle != nil {
 				this.fileLogicHandle.Sync()
